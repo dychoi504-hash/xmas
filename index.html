@@ -42,7 +42,7 @@
       z-index: 50;
       padding: 10px 20px;
       border-radius: 9999px;
-      background: rgba(20, 20, 24, 0.94);
+      background: rgba(18, 18, 22, 0.94);
       border: 1px solid rgba(251, 191, 36, 0.45);
       color: #fde68a;
       font-size: 13px;
@@ -58,36 +58,13 @@
       opacity: 1;
     }
 
-    /* 화면 드래그 앤 드롭 안내 오버레이 */
-    #dropOverlay {
-      position: fixed;
-      inset: 16px;
-      z-index: 55;
-      border: 3px dashed #fbbf24;
-      border-radius: 28px;
-      background: rgba(0, 0, 0, 0.82);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 10px;
-      color: #fef3c7;
-      font-size: 18px;
-      font-weight: 700;
-      pointer-events: none;
-    }
-
-    #dropOverlay.active {
-      display: flex;
-    }
-
     /* 하단 플로팅 컨트롤 바 */
     #hudContainer {
       position: fixed;
       bottom: 18px;
       left: 50%;
       width: 95%;
-      max-width: 920px;
+      max-width: 880px;
       z-index: 40;
       transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -152,7 +129,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 13px;
+      padding: 8px 14px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(255, 255, 255, 0.08);
@@ -169,18 +146,6 @@
 
     .action-btn:active {
       transform: scale(0.96);
-    }
-
-    .action-btn.kid-btn {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.28), rgba(245, 158, 11, 0.28));
-      border-color: rgba(251, 191, 36, 0.45);
-      color: #fef3c7;
-    }
-
-    .action-btn.kid-btn.has-kid {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.32));
-      border-color: rgba(52, 211, 153, 0.55);
-      color: #d1fae5;
     }
 
     .action-btn.music-on {
@@ -271,115 +236,10 @@
       font-weight: 700;
     }
 
+    /* LG 빔프로젝터 리모컨 포커스 표시 */
     button:focus-visible {
       outline: 2px solid #fbbf24;
       outline-offset: 2px;
-    }
-
-    /* 선택적 위치 미세조정 팝오버 (필요할 때만 열림) */
-    #adjustModal {
-      position: fixed;
-      inset: 0;
-      z-index: 60;
-      background: rgba(0, 0, 0, 0.84);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-
-    #adjustModal.open {
-      display: flex;
-    }
-
-    .modal-card {
-      width: 100%;
-      max-width: 360px;
-      background: #141419;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 24px;
-      padding: 20px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
-      text-align: center;
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #fef3c7;
-      margin: 0 0 6px 0;
-    }
-
-    .modal-desc {
-      font-size: 12.5px;
-      color: #cbd5e1;
-      margin: 0 0 14px 0;
-      line-height: 1.45;
-    }
-
-    #adjustPreviewCanvas {
-      width: 220px;
-      height: 220px;
-      margin: 0 auto 14px auto;
-      display: block;
-      border-radius: 20px;
-      background: #050507;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      cursor: grab;
-      touch-action: none;
-    }
-
-    .zoom-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-      padding: 0 6px;
-    }
-
-    .zoom-row span {
-      font-size: 12px;
-      color: #94a3b8;
-      white-space: nowrap;
-    }
-
-    .zoom-row input[type="range"] {
-      flex: 1;
-      accent-color: #f59e0b;
-      cursor: pointer;
-    }
-
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1.2fr;
-      gap: 8px;
-    }
-
-    .m-btn {
-      padding: 10px 8px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      font-size: 12.5px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .m-btn-cancel {
-      background: rgba(255, 255, 255, 0.08);
-      color: #e2e8f0;
-    }
-
-    .m-btn-change {
-      background: rgba(56, 189, 248, 0.18);
-      border-color: rgba(56, 189, 248, 0.4);
-      color: #7dd3fc;
-    }
-
-    .m-btn-apply {
-      background: #f59e0b;
-      border-color: #fbbf24;
-      color: #090d16;
     }
   </style>
 </head>
@@ -388,36 +248,8 @@
   <!-- 전체화면 투사 캔버스 -->
   <canvas id="projectorCanvas"></canvas>
 
-  <!-- 드래그 앤 드롭 안내 -->
-  <div id="dropOverlay">
-    <span style="font-size: 38px;">🎅</span>
-    <span>여기에 아기 사진을 놓으면 산타 모자를 씌워 바로 띄웁니다!</span>
-  </div>
-
-  <!-- 숨겨진 사진 파일 입력 -->
-  <input type="file" id="kidPhotoInput" accept="image/*" style="display: none;" />
-
   <!-- 상단 안내 메시지 -->
-  <div id="toastBanner">하단 [🎅 아기 사진 바로 넣기]를 누르거나 사진을 화면에 끌어다 놓으세요</div>
-
-  <!-- 위치가 안 맞을 때만 여는 미세조정 창 -->
-  <div id="adjustModal" role="dialog" aria-modal="true" aria-labelledby="adjustModalTitle">
-    <div class="modal-card">
-      <h2 id="adjustModalTitle" class="modal-title">아기 얼굴 위치/크기 미세조정</h2>
-      <p class="modal-desc">사진을 드래그하거나 확대해서 얼굴 위치를 맞출 수 있어요.</p>
-      <canvas id="adjustPreviewCanvas" width="260" height="260"></canvas>
-      <div class="zoom-row">
-        <span>축소</span>
-        <input type="range" id="cropZoomRange" min="0.5" max="3.0" step="0.02" value="1.25" />
-        <span>확대</span>
-      </div>
-      <div class="modal-actions">
-        <button type="button" id="adjustCloseBtn" class="m-btn m-btn-cancel">닫기</button>
-        <button type="button" id="changePhotoBtn" class="m-btn m-btn-change">다른 사진</button>
-        <button type="button" id="adjustApplyBtn" class="m-btn m-btn-apply">적용 완료</button>
-      </div>
-    </div>
-  </div>
+  <div id="toastBanner">화면을 터치하거나 리모컨 방향키를 누르면 메뉴가 나타납니다</div>
 
   <!-- 하단 자동 숨김 플로팅 컨트롤 바 -->
   <div id="hudContainer" class="hud-visible">
@@ -429,18 +261,6 @@
         </div>
 
         <div class="top-actions">
-          <!-- 아기 얼굴 사진 즉시 넣기 버튼 -->
-          <button id="addKidBtn" type="button" class="action-btn kid-btn">
-            <span>🎅</span>
-            <span id="addKidLabel">아기 사진 바로 넣기</span>
-          </button>
-
-          <!-- 사진 넣은 후에만 보이는 위치 미세조정 버튼 -->
-          <button id="adjustKidBtn" type="button" class="action-btn" style="display: none;">
-            <span>🎯</span>
-            <span>얼굴 위치조정</span>
-          </button>
-
           <!-- 오르골 자장가 토글 -->
           <button id="musicBtn" type="button" class="action-btn">
             <span id="musicEmoji">🔇</span>
@@ -515,7 +335,6 @@
         speedMultiplier: 1.0,
         theme: 'classic',
         isMusicOn: false,
-        hasKidSprite: false,
         lastTime: performance.now(),
         elapsed: 0
       };
@@ -538,234 +357,404 @@
       let microSnow = [];
 
       /**
-       * 4. 아기 사진 즉시 반영 + 산타 모자 합성 (원본 얼굴 무변형)
+       * 오프스크린 고화질 LED 스프라이트 생성 (6종)
        */
-      const kidPhotoInput = document.getElementById('kidPhotoInput');
-      const adjustModal = document.getElementById('adjustModal');
-      const adjustPreviewCanvas = document.getElementById('adjustPreviewCanvas');
-      const adjustCtx = adjustPreviewCanvas.getContext('2d');
-      const cropZoomRange = document.getElementById('cropZoomRange');
-      const addKidBtn = document.getElementById('addKidBtn');
-      const addKidLabel = document.getElementById('addKidLabel');
-      const adjustKidBtn = document.getElementById('adjustKidBtn');
-      const dropOverlay = document.getElementById('dropOverlay');
-
-      const cropState = {
-        img: null,
-        offsetX: 0,
-        offsetY: 0,
-        zoom: 1.25,
-        isDragging: false,
-        dragStartX: 0,
-        dragStartY: 0
-      };
-
-      function renderKidSticker(targetCtx, cx, cy, faceRadius) {
-        if (!cropState.img) return;
-        const img = cropState.img;
-        const natW = img.naturalWidth || img.width;
-        const natH = img.naturalHeight || img.height;
-        const minSide = Math.min(natW, natH);
-        const baseScale = (faceRadius * 2) / Math.max(minSide, 1);
-        const finalScale = baseScale * cropState.zoom;
-
-        const drawW = natW * finalScale;
-        const drawH = natH * finalScale;
-
-        targetCtx.save();
-        targetCtx.translate(cx, cy);
-
-        // 따뜻한 LED 후광 테두리
-        targetCtx.save();
-        targetCtx.shadowColor = 'rgba(253, 224, 71, 0.95)';
-        targetCtx.shadowBlur = 22;
-        targetCtx.fillStyle = '#fef3c7';
-        targetCtx.beginPath();
-        targetCtx.arc(0, 0, faceRadius + 3.5, 0, Math.PI * 2);
-        targetCtx.fill();
-        targetCtx.restore();
-
-        // 원형 얼굴 클리핑 (원본 사진 그대로, 왜곡·보정 없음)
-        targetCtx.save();
-        targetCtx.beginPath();
-        targetCtx.arc(0, 0, faceRadius, 0, Math.PI * 2);
-        targetCtx.closePath();
-        targetCtx.clip();
-
-        targetCtx.fillStyle = '#1e293b';
-        targetCtx.fillRect(-faceRadius, -faceRadius, faceRadius * 2, faceRadius * 2);
-        targetCtx.drawImage(
-          img,
-          -drawW / 2 + cropState.offsetX,
-          -drawH / 2 + cropState.offsetY,
-          drawW,
-          drawH
-        );
-        targetCtx.restore();
-
-        // 깔끔한 흰색 원형 프레임
-        targetCtx.strokeStyle = '#ffffff';
-        targetCtx.lineWidth = 3;
-        targetCtx.beginPath();
-        targetCtx.arc(0, 0, faceRadius, 0, Math.PI * 2);
-        targetCtx.stroke();
-
-        // 머리 위에 귀여운 산타 모자만 씌우기
-        drawSantaHatOverlay(targetCtx, 0, -faceRadius * 0.84, faceRadius * 1.95);
-
-        targetCtx.restore();
-      }
-
-      function drawAdjustPreview() {
-        const w = adjustPreviewCanvas.width;
-        const h = adjustPreviewCanvas.height;
-        adjustCtx.clearRect(0, 0, w, h);
-        adjustCtx.fillStyle = '#050507';
-        adjustCtx.fillRect(0, 0, w, h);
-        renderKidSticker(adjustCtx, w / 2, h / 2 + 22, 64);
-      }
-
-      function applyKidSpriteImmediately() {
+      function createSpriteCanvas(drawFn) {
         const size = 240;
         const off = document.createElement('canvas');
         off.width = size;
         off.height = size;
         const c = off.getContext('2d');
-        renderKidSticker(c, size / 2, size / 2 + 20, 56);
-
-        sprites.kid = off;
-        state.hasKidSprite = true;
-        addKidBtn.classList.add('has-kid');
-        addKidLabel.textContent = '아기 사진 변경';
-        adjustKidBtn.style.display = 'inline-flex';
-        populateScene();
+        c.translate(size / 2, size / 2);
+        drawFn(c);
+        return off;
       }
 
-      function loadBabyPhotoFile(file) {
-        if (!file || !file.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = function (ev) {
-          const img = new Image();
-          img.onload = function () {
-            cropState.img = img;
-            cropState.zoom = 1.25;
-            cropState.offsetX = 0;
-            // 일반 아기/인물 사진에서 얼굴이 상단~중앙에 위치하므로 자동으로 얼굴 중심 맞춤
-            cropState.offsetY = (img.naturalHeight > img.naturalWidth) ? 16 : 6;
-            cropZoomRange.value = '1.25';
+      function buildSprites() {
+        // 1. 귀여운 산타클로스
+        sprites.santa = createSpriteCanvas((c) => {
+          c.shadowColor = 'rgba(255, 85, 85, 0.85)';
+          c.shadowBlur = 22;
 
-            // 모달을 거치지 않고 즉시 천장에 투사!
-            applyKidSpriteImmediately();
-            showToast('🎅 산타 모자 쓴 아기 얼굴이 천장에 바로 추가되었습니다!');
-          };
-          img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
+          // 빨간 몸통
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.roundRect(-42, 4, 84, 62, 24);
+          c.fill();
+
+          // 검은 벨트 & 황금 버클
+          c.shadowBlur = 0;
+          c.fillStyle = '#18181b';
+          c.fillRect(-41, 32, 82, 12);
+          c.strokeStyle = '#fbbf24';
+          c.lineWidth = 4;
+          c.strokeRect(-12, 29, 24, 18);
+
+          // 얼굴
+          c.fillStyle = '#fed7aa';
+          c.beginPath();
+          c.arc(0, -14, 24, 0, Math.PI * 2);
+          c.fill();
+
+          // 풍성한 흰 수염
+          c.shadowColor = 'rgba(255, 255, 255, 0.75)';
+          c.shadowBlur = 12;
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.moveTo(-25, -10);
+          c.quadraticCurveTo(-30, 22, 0, 26);
+          c.quadraticCurveTo(30, 22, 25, -10);
+          c.quadraticCurveTo(0, -2, -25, -10);
+          c.closePath();
+          c.fill();
+
+          // 눈 & 빨간 코
+          c.shadowBlur = 0;
+          c.fillStyle = '#1e293b';
+          c.beginPath();
+          c.arc(-8, -17, 2.7, 0, Math.PI * 2);
+          c.arc(8, -17, 2.7, 0, Math.PI * 2);
+          c.fill();
+
+          c.fillStyle = '#f87171';
+          c.beginPath();
+          c.arc(0, -11, 4.2, 0, Math.PI * 2);
+          c.fill();
+
+          // 산타 모자
+          c.shadowColor = 'rgba(239, 68, 68, 0.8)';
+          c.shadowBlur = 14;
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.moveTo(-25, -24);
+          c.quadraticCurveTo(-6, -64, 34, -44);
+          c.quadraticCurveTo(18, -30, 25, -24);
+          c.closePath();
+          c.fill();
+
+          // 모자 흰 테두리 & 방울
+          c.shadowBlur = 10;
+          c.shadowColor = '#ffffff';
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.roundRect(-27, -28, 54, 10, 5);
+          c.fill();
+          c.beginPath();
+          c.arc(36, -43, 7, 0, Math.PI * 2);
+          c.fill();
+        });
+
+        // 2. 깔끔한 눈사람 (경로 분리로 삼각형 잔상 완전 제거)
+        sprites.snowman = createSpriteCanvas((c) => {
+          // 나뭇가지 팔 (먼저 뒤쪽에 그리기)
+          c.strokeStyle = '#d97706';
+          c.lineWidth = 4.2;
+          c.lineCap = 'round';
+          c.beginPath();
+          c.moveTo(-30, 14);
+          c.lineTo(-56, -4);
+          c.moveTo(-47, 2);
+          c.lineTo(-54, -12);
+          c.moveTo(30, 14);
+          c.lineTo(56, -4);
+          c.moveTo(47, 2);
+          c.lineTo(54, -12);
+          c.stroke();
+
+          // 아래 눈덩이 (몸통)
+          c.save();
+          c.shadowColor = 'rgba(186, 230, 253, 0.95)';
+          c.shadowBlur = 20;
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(0, 34, 35, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+
+          // 위 눈덩이 (머리)
+          c.save();
+          c.shadowColor = 'rgba(224, 242, 254, 0.95)';
+          c.shadowBlur = 16;
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(0, -12, 24, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+
+          // 빨강·초록 목도리
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.roundRect(-22, 6, 44, 10, 5);
+          c.fill();
+
+          c.fillStyle = '#22c55e';
+          c.beginPath();
+          c.roundRect(7, 11, 11, 24, 4);
+          c.fill();
+
+          // 까만 두 눈
+          c.fillStyle = '#0f172a';
+          c.beginPath();
+          c.arc(-8, -17, 2.8, 0, Math.PI * 2);
+          c.fill();
+          c.beginPath();
+          c.arc(8, -17, 2.8, 0, Math.PI * 2);
+          c.fill();
+
+          // 주황 당근 코
+          c.fillStyle = '#f97316';
+          c.beginPath();
+          c.moveTo(0, -13);
+          c.lineTo(17, -10);
+          c.lineTo(0, -7);
+          c.closePath();
+          c.fill();
+
+          // 미소 짓는 입
+          c.strokeStyle = '#0f172a';
+          c.lineWidth = 2.4;
+          c.lineCap = 'round';
+          c.beginPath();
+          c.arc(0, -9, 10, 0.22 * Math.PI, 0.78 * Math.PI);
+          c.stroke();
+
+          // 몸통 단추 3개
+          c.fillStyle = '#0f172a';
+          [-2, 12, 26].forEach((offsetY) => {
+            c.beginPath();
+            c.arc(0, 26 + offsetY * 0.65, 2.8, 0, Math.PI * 2);
+            c.fill();
+          });
+
+          // 검은 중절모 & 빨간 띠
+          c.fillStyle = '#1e293b';
+          c.beginPath();
+          c.roundRect(-25, -36, 50, 6, 3);
+          c.fill();
+          c.beginPath();
+          c.roundRect(-16, -60, 32, 25, 4);
+          c.fill();
+
+          c.fillStyle = '#ef4444';
+          c.fillRect(-16, -42, 32, 5);
+        });
+
+        // 3. 황금 징글벨 & 빨간 리본
+        sprites.bell = createSpriteCanvas((c) => {
+          // 종 아래 구슬
+          c.fillStyle = '#d97706';
+          c.beginPath();
+          c.arc(0, 46, 11, 0, Math.PI * 2);
+          c.fill();
+
+          // 황금 종 본체
+          c.save();
+          c.shadowColor = 'rgba(250, 204, 21, 0.95)';
+          c.shadowBlur = 24;
+          const bellGrad = c.createLinearGradient(-38, -32, 38, 42);
+          bellGrad.addColorStop(0, '#fef08a');
+          bellGrad.addColorStop(0.5, '#facc15');
+          bellGrad.addColorStop(1, '#ca8a04');
+          c.fillStyle = bellGrad;
+          c.beginPath();
+          c.moveTo(0, -36);
+          c.bezierCurveTo(28, -36, 34, -4, 42, 26);
+          c.quadraticCurveTo(48, 38, 36, 42);
+          c.lineTo(-36, 42);
+          c.quadraticCurveTo(-48, 38, -42, 26);
+          c.bezierCurveTo(-34, -4, -28, -36, 0, -36);
+          c.closePath();
+          c.fill();
+          c.restore();
+
+          // 종 테두리 띠 & 광택선
+          c.fillStyle = '#fef9c3';
+          c.beginPath();
+          c.roundRect(-38, 28, 76, 6, 3);
+          c.fill();
+
+          c.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+          c.lineWidth = 4;
+          c.lineCap = 'round';
+          c.beginPath();
+          c.moveTo(-14, -20);
+          c.quadraticCurveTo(-22, 0, -25, 20);
+          c.stroke();
+
+          // 상단 초록 호랑가시나무 잎
+          c.fillStyle = '#22c55e';
+          c.beginPath();
+          c.ellipse(-22, -38, 16, 8, -0.35, 0, Math.PI * 2);
+          c.fill();
+          c.beginPath();
+          c.ellipse(22, -38, 16, 8, 0.35, 0, Math.PI * 2);
+          c.fill();
+
+          // 상단 빨간 리본
+          c.save();
+          c.shadowColor = 'rgba(239, 68, 68, 0.85)';
+          c.shadowBlur = 12;
+          c.fillStyle = '#ef4444';
+          c.beginPath();
+          c.moveTo(0, -40);
+          c.bezierCurveTo(-24, -58, -32, -26, 0, -36);
+          c.fill();
+          c.beginPath();
+          c.moveTo(0, -40);
+          c.bezierCurveTo(24, -58, 32, -26, 0, -36);
+          c.fill();
+          c.beginPath();
+          c.arc(0, -38, 7, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+        });
+
+        // 4. 반짝이는 크리스마스 트리
+        sprites.tree = createSpriteCanvas((c) => {
+          // 나무 기둥
+          c.fillStyle = '#b45309';
+          c.fillRect(-11, 44, 22, 22);
+
+          // 3단 초록 잎
+          c.save();
+          c.shadowColor = 'rgba(34, 197, 94, 0.9)';
+          c.shadowBlur = 22;
+          c.fillStyle = '#22c55e';
+
+          const tiers = [
+            { top: -54, bottom: -10, width: 32 },
+            { top: -26, bottom: 20, width: 46 },
+            { top: 4, bottom: 48, width: 58 }
+          ];
+          tiers.forEach((t) => {
+            c.beginPath();
+            c.moveTo(0, t.top);
+            c.lineTo(-t.width, t.bottom);
+            c.lineTo(t.width, t.bottom);
+            c.closePath();
+            c.fill();
+          });
+          c.restore();
+
+          // 꼭대기 황금 별
+          c.save();
+          c.shadowColor = '#fde047';
+          c.shadowBlur = 18;
+          c.fillStyle = '#fde047';
+          drawStarPath(c, 0, -62, 5, 14, 6);
+          c.fill();
+          c.restore();
+
+          // 오너먼트 전구
+          const ornaments = [
+            { x: -10, y: -22, col: '#f87171' },
+            { x: 12, y: -16, col: '#fde047' },
+            { x: -18, y: 8, col: '#38bdf8' },
+            { x: 4, y: 12, col: '#f472b6' },
+            { x: 22, y: 10, col: '#f87171' },
+            { x: -26, y: 36, col: '#fde047' },
+            { x: -4, y: 38, col: '#38bdf8' },
+            { x: 20, y: 35, col: '#f472b6' }
+          ];
+          ornaments.forEach((o) => {
+            c.save();
+            c.shadowColor = o.col;
+            c.shadowBlur = 10;
+            c.fillStyle = o.col;
+            c.beginPath();
+            c.arc(o.x, o.y, 4.8, 0, Math.PI * 2);
+            c.fill();
+            c.restore();
+          });
+        });
+
+        // 5. 결정 눈송이
+        sprites.snowflake = createSpriteCanvas((c) => {
+          c.save();
+          c.shadowColor = 'rgba(125, 211, 252, 0.95)';
+          c.shadowBlur = 22;
+          c.strokeStyle = '#e0f2fe';
+          c.lineCap = 'round';
+
+          for (let i = 0; i < 6; i++) {
+            c.save();
+            c.rotate((i * Math.PI) / 3);
+
+            c.lineWidth = 6;
+            c.beginPath();
+            c.moveTo(0, 0);
+            c.lineTo(0, -64);
+            c.stroke();
+
+            c.lineWidth = 4.2;
+            c.beginPath();
+            c.moveTo(0, -28);
+            c.lineTo(-16, -42);
+            c.moveTo(0, -28);
+            c.lineTo(16, -42);
+            c.moveTo(0, -46);
+            c.lineTo(-12, -57);
+            c.moveTo(0, -46);
+            c.lineTo(12, -57);
+            c.stroke();
+
+            c.restore();
+          }
+
+          c.fillStyle = '#ffffff';
+          c.beginPath();
+          c.arc(0, 0, 8, 0, Math.PI * 2);
+          c.fill();
+          c.restore();
+        });
+
+        // 6. 지팡이 사탕 (캔디케인)
+        sprites.candy = createSpriteCanvas((c) => {
+          c.save();
+          c.shadowColor = 'rgba(248, 113, 113, 0.85)';
+          c.shadowBlur = 18;
+          c.lineCap = 'round';
+
+          c.strokeStyle = '#ffffff';
+          c.lineWidth = 20;
+          c.beginPath();
+          c.moveTo(14, 52);
+          c.lineTo(14, -22);
+          c.arc(-6, -22, 20, 0, Math.PI, true);
+          c.stroke();
+
+          c.strokeStyle = '#ef4444';
+          c.lineWidth = 20;
+          c.setLineDash([14, 16]);
+          c.beginPath();
+          c.moveTo(14, 52);
+          c.lineTo(14, -22);
+          c.arc(-6, -22, 20, 0, Math.PI, true);
+          c.stroke();
+          c.restore();
+        });
       }
 
-      // 버튼 클릭 시 바로 파일 선택창 오픈
-      addKidBtn.addEventListener('click', () => {
-        kidPhotoInput.value = '';
-        kidPhotoInput.click();
-        revealHud();
-      });
-
-      kidPhotoInput.addEventListener('change', (e) => {
-        const file = e.target.files && e.target.files[0];
-        if (file) {
-          loadBabyPhotoFile(file);
+      function drawStarPath(c, cx, cy, spikes, outerR, innerR) {
+        let rot = (Math.PI / 2) * 3;
+        const step = Math.PI / spikes;
+        c.beginPath();
+        c.moveTo(cx, cy - outerR);
+        for (let i = 0; i < spikes; i++) {
+          c.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+          rot += step;
+          c.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+          rot += step;
         }
-      });
-
-      // 화면 아무 곳에나 사진 드래그 앤 드롭 지원
-      window.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropOverlay.classList.add('active');
-      });
-
-      window.addEventListener('dragleave', (e) => {
-        if (e.relatedTarget === null) {
-          dropOverlay.classList.remove('active');
-        }
-      });
-
-      window.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropOverlay.classList.remove('active');
-        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file) {
-          loadBabyPhotoFile(file);
-        }
-      });
-
-      // 선택적 얼굴 위치 미세조정 모달
-      adjustKidBtn.addEventListener('click', () => {
-        if (!cropState.img) return;
-        drawAdjustPreview();
-        adjustModal.classList.add('open');
-        revealHud();
-      });
-
-      function startCropDrag(clientX, clientY) {
-        cropState.isDragging = true;
-        cropState.dragStartX = clientX - cropState.offsetX;
-        cropState.dragStartY = clientY - cropState.offsetY;
+        c.closePath();
       }
-
-      function moveCropDrag(clientX, clientY) {
-        if (!cropState.isDragging) return;
-        cropState.offsetX = clientX - cropState.dragStartX;
-        cropState.offsetY = clientY - cropState.dragStartY;
-        drawAdjustPreview();
-      }
-
-      function endCropDrag() {
-        cropState.isDragging = false;
-      }
-
-      adjustPreviewCanvas.addEventListener('mousedown', (e) => startCropDrag(e.clientX, e.clientY));
-      window.addEventListener('mousemove', (e) => moveCropDrag(e.clientX, e.clientY));
-      window.addEventListener('mouseup', endCropDrag);
-
-      adjustPreviewCanvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length > 0) startCropDrag(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
-
-      adjustPreviewCanvas.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 0) moveCropDrag(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
-
-      adjustPreviewCanvas.addEventListener('touchend', endCropDrag);
-
-      cropZoomRange.addEventListener('input', () => {
-        cropState.zoom = parseFloat(cropZoomRange.value) || 1.25;
-        drawAdjustPreview();
-      });
-
-      document.getElementById('adjustCloseBtn').addEventListener('click', () => {
-        adjustModal.classList.remove('open');
-      });
-
-      document.getElementById('changePhotoBtn').addEventListener('click', () => {
-        adjustModal.classList.remove('open');
-        kidPhotoInput.value = '';
-        kidPhotoInput.click();
-      });
-
-      document.getElementById('adjustApplyBtn').addEventListener('click', () => {
-        applyKidSpriteImmediately();
-        adjustModal.classList.remove('open');
-        showToast('얼굴 위치가 적용되었습니다!');
-      });
 
       /**
-       * 5. 전체 투사 씬 파티클 구성
+       * 전체 투사 씬 파티클 구성
        */
       function populateScene() {
         const targetCount = DENSITY_MAP[state.density] || 54;
-        const iconTypes = state.hasKidSprite
-          ? ['kid', 'santa', 'bell', 'tree', 'snowman', 'snowflake', 'kid', 'candy', 'gift', 'star']
-          : ['santa', 'bell', 'tree', 'snowman', 'snowflake', 'snowflake', 'bell', 'candy', 'gift', 'star'];
+        const iconTypes = ['santa', 'snowman', 'bell', 'tree', 'snowflake', 'candy'];
 
         const pad = 100;
         const densityFactor = state.density === 'ultra' ? 2.2 : state.density === 'high' ? 1.6 : 1.0;
@@ -818,13 +807,8 @@
             baseScale = (0.66 + Math.random() * 0.15) * mobileFactor;
           }
 
-          // 아이 얼굴 아이콘은 잘 보이도록 살짝 더 크게 표시
-          if (type === 'kid') {
-            baseScale *= 1.15;
-          }
-
           const parallax = 0.65 + layer * 0.28;
-          const isFullSpin = type === 'snowflake' || type === 'star';
+          const isFullSpin = type === 'snowflake';
 
           icons.push({
             type,
@@ -839,8 +823,7 @@
               ? (Math.random() > 0.5 ? 1 : -1) * (0.25 + Math.random() * 0.4)
               : (0.8 + Math.random() * 0.7),
             swayPhase: Math.random() * Math.PI * 2,
-            // 아이 얼굴은 뒤집히지 않고 ±11도 이내로만 살랑살랑 흔들리도록 제한
-            swayAmp: type === 'kid' ? 0.18 : (0.15 + Math.random() * 0.14),
+            swayAmp: 0.15 + Math.random() * 0.14,
             scale: baseScale,
             pulsePhase: Math.random() * Math.PI * 2
           });
@@ -850,7 +833,7 @@
       }
 
       /**
-       * 6. 캔버스 리사이즈 동기화
+       * 캔버스 리사이즈 동기화
        */
       function syncCanvasSize(repopulate) {
         const dims = getSafeDimensions();
@@ -868,7 +851,7 @@
       }
 
       /**
-       * 7. 메인 60fps 렌더링 루프
+       * 메인 60fps 렌더링 루프
        */
       function animate(now) {
         try {
@@ -960,7 +943,7 @@
             }
           }
 
-          // 메인 LED 아이콘 + 아이 얼굴 스티커 렌더링
+          // 메인 LED 아이콘 렌더링
           const margin = 120;
           for (let i = 0; i < icons.length; i++) {
             const item = icons[i];
@@ -1000,7 +983,7 @@
       }
 
       /**
-       * 8. Web Audio API 오르골 자장가 ('고요한 밤 거룩한 밤')
+       * Web Audio API 오르골 자장가 ('고요한 밤 거룩한 밤')
        */
       let audioCtx = null;
       let lullabyTimer = null;
@@ -1085,7 +1068,7 @@
       }
 
       /**
-       * 9. HUD 컨트롤 및 자동 숨김
+       * HUD 컨트롤 및 자동 숨김 (3초)
        */
       const hudContainer = document.getElementById('hudContainer');
       const toastBanner = document.getElementById('toastBanner');
@@ -1096,11 +1079,9 @@
         hudContainer.classList.add('hud-visible');
         clearTimeout(hudHideTimer);
         hudHideTimer = setTimeout(() => {
-          if (!adjustModal.classList.contains('open')) {
-            hudContainer.classList.remove('hud-visible');
-            hudContainer.classList.add('hud-hidden');
-          }
-        }, 3800);
+          hudContainer.classList.remove('hud-visible');
+          hudContainer.classList.add('hud-hidden');
+        }, 3000);
       }
 
       function showToast(msg) {
@@ -1186,7 +1167,7 @@
       syncCanvasSize(true);
       requestAnimationFrame(animate);
       revealHud();
-      showToast('하단 [🎅 아기 사진 바로 넣기]를 누르거나 사진을 화면에 끌어다 놓으세요!');
+      showToast('화면을 터치하거나 리모컨 방향키를 누르면 메뉴가 나타납니다');
     })();
   </script>
 </body>
