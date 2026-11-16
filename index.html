@@ -1,0 +1,1194 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>크리스마스 LED 천장 프로젝터</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000000;
+      color: #ffffff;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    }
+
+    #projectorCanvas {
+      position: fixed;
+      inset: 0;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+    }
+
+    /* 상단 안내 토스트 */
+    #toastBanner {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      background: rgba(20, 20, 24, 0.94);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      color: #fde68a;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+      transition: opacity 0.45s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #toastBanner.show {
+      opacity: 1;
+    }
+
+    /* 화면 드래그 앤 드롭 안내 오버레이 */
+    #dropOverlay {
+      position: fixed;
+      inset: 16px;
+      z-index: 55;
+      border: 3px dashed #fbbf24;
+      border-radius: 28px;
+      background: rgba(0, 0, 0, 0.82);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+      color: #fef3c7;
+      font-size: 18px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    #dropOverlay.active {
+      display: flex;
+    }
+
+    /* 하단 플로팅 컨트롤 바 */
+    #hudContainer {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      width: 95%;
+      max-width: 920px;
+      z-index: 40;
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #hudContainer.hud-hidden {
+      opacity: 0;
+      transform: translate(-50%, 26px);
+      pointer-events: none;
+    }
+
+    #hudContainer.hud-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      pointer-events: auto;
+    }
+
+    .hud-panel {
+      background: rgba(12, 12, 16, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      padding: 14px 16px;
+      box-shadow: 0 12px 45px rgba(0, 0, 0, 0.95);
+    }
+
+    .hud-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 10px #34d399;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #f1f5f9;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.12s, border-color 0.2s;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .action-btn:active {
+      transform: scale(0.96);
+    }
+
+    .action-btn.kid-btn {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.28), rgba(245, 158, 11, 0.28));
+      border-color: rgba(251, 191, 36, 0.45);
+      color: #fef3c7;
+    }
+
+    .action-btn.kid-btn.has-kid {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.32));
+      border-color: rgba(52, 211, 153, 0.55);
+      color: #d1fae5;
+    }
+
+    .action-btn.music-on {
+      border-color: rgba(251, 191, 36, 0.55);
+      background: rgba(245, 158, 11, 0.18);
+      color: #fde68a;
+    }
+
+    .action-btn.primary-btn {
+      background: #f59e0b;
+      border-color: #fbbf24;
+      color: #090d16;
+      font-weight: 700;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.4);
+    }
+
+    .action-btn.primary-btn:hover {
+      background: #fbbf24;
+    }
+
+    .hud-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding-top: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .hud-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .hud-panel {
+        padding: 12px;
+      }
+    }
+
+    .control-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    .seg-group {
+      display: grid;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 4px;
+      border-radius: 10px;
+    }
+
+    .seg-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .seg-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .seg-btn {
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 4px;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .seg-btn:hover {
+      color: #ffffff;
+    }
+
+    .seg-btn.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fcd34d;
+      font-weight: 700;
+    }
+
+    button:focus-visible {
+      outline: 2px solid #fbbf24;
+      outline-offset: 2px;
+    }
+
+    /* 선택적 위치 미세조정 팝오버 (필요할 때만 열림) */
+    #adjustModal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(0, 0, 0, 0.84);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    #adjustModal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: #141419;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 24px;
+      padding: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fef3c7;
+      margin: 0 0 6px 0;
+    }
+
+    .modal-desc {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      margin: 0 0 14px 0;
+      line-height: 1.45;
+    }
+
+    #adjustPreviewCanvas {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 14px auto;
+      display: block;
+      border-radius: 20px;
+      background: #050507;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 0 6px;
+    }
+
+    .zoom-row span {
+      font-size: 12px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .zoom-row input[type="range"] {
+      flex: 1;
+      accent-color: #f59e0b;
+      cursor: pointer;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 8px;
+    }
+
+    .m-btn {
+      padding: 10px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .m-btn-cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+    }
+
+    .m-btn-change {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+    }
+
+    .m-btn-apply {
+      background: #f59e0b;
+      border-color: #fbbf24;
+      color: #090d16;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 전체화면 투사 캔버스 -->
+  <canvas id="projectorCanvas"></canvas>
+
+  <!-- 드래그 앤 드롭 안내 -->
+  <div id="dropOverlay">
+    <span style="font-size: 38px;">🎅</span>
+    <span>여기에 아기 사진을 놓으면 산타 모자를 씌워 바로 띄웁니다!</span>
+  </div>
+
+  <!-- 숨겨진 사진 파일 입력 -->
+  <input type="file" id="kidPhotoInput" accept="image/*" style="display: none;" />
+
+  <!-- 상단 안내 메시지 -->
+  <div id="toastBanner">하단 [🎅 아기 사진 바로 넣기]를 누르거나 사진을 화면에 끌어다 놓으세요</div>
+
+  <!-- 위치가 안 맞을 때만 여는 미세조정 창 -->
+  <div id="adjustModal" role="dialog" aria-modal="true" aria-labelledby="adjustModalTitle">
+    <div class="modal-card">
+      <h2 id="adjustModalTitle" class="modal-title">아기 얼굴 위치/크기 미세조정</h2>
+      <p class="modal-desc">사진을 드래그하거나 확대해서 얼굴 위치를 맞출 수 있어요.</p>
+      <canvas id="adjustPreviewCanvas" width="260" height="260"></canvas>
+      <div class="zoom-row">
+        <span>축소</span>
+        <input type="range" id="cropZoomRange" min="0.5" max="3.0" step="0.02" value="1.25" />
+        <span>확대</span>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="adjustCloseBtn" class="m-btn m-btn-cancel">닫기</button>
+        <button type="button" id="changePhotoBtn" class="m-btn m-btn-change">다른 사진</button>
+        <button type="button" id="adjustApplyBtn" class="m-btn m-btn-apply">적용 완료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 자동 숨김 플로팅 컨트롤 바 -->
+  <div id="hudContainer" class="hud-visible">
+    <div class="hud-panel">
+      <div class="hud-top">
+        <div class="brand-title">
+          <span class="status-dot"></span>
+          <span>크리스마스 LED 천장 프로젝터</span>
+        </div>
+
+        <div class="top-actions">
+          <!-- 아기 얼굴 사진 즉시 넣기 버튼 -->
+          <button id="addKidBtn" type="button" class="action-btn kid-btn">
+            <span>🎅</span>
+            <span id="addKidLabel">아기 사진 바로 넣기</span>
+          </button>
+
+          <!-- 사진 넣은 후에만 보이는 위치 미세조정 버튼 -->
+          <button id="adjustKidBtn" type="button" class="action-btn" style="display: none;">
+            <span>🎯</span>
+            <span>얼굴 위치조정</span>
+          </button>
+
+          <!-- 오르골 자장가 토글 -->
+          <button id="musicBtn" type="button" class="action-btn">
+            <span id="musicEmoji">🔇</span>
+            <span id="musicLabel">오르골 끄기</span>
+          </button>
+
+          <!-- 전체화면 버튼 -->
+          <button id="fullscreenBtn" type="button" class="action-btn primary-btn">
+            <span>⛶</span>
+            <span id="fullscreenLabel">전체화면</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-grid">
+        <!-- 1. 아이콘 밀도 -->
+        <div class="control-card">
+          <span class="control-label">아이콘 밀도</span>
+          <div class="seg-group seg-3">
+            <button type="button" data-density="medium" class="seg-btn density-btn">보통</button>
+            <button type="button" data-density="high" class="seg-btn density-btn active">많음</button>
+            <button type="button" data-density="ultra" class="seg-btn density-btn">가득</button>
+          </div>
+        </div>
+
+        <!-- 2. 움직임 속도 -->
+        <div class="control-card">
+          <span class="control-label">움직임 속도</span>
+          <div class="seg-group seg-3">
+            <button type="button" data-speed="slow" class="seg-btn speed-btn">느리게</button>
+            <button type="button" data-speed="normal" class="seg-btn speed-btn active">보통</button>
+            <button type="button" data-speed="fast" class="seg-btn speed-btn">빠르게</button>
+          </div>
+        </div>
+
+        <!-- 3. 조명 테마 -->
+        <div class="control-card">
+          <span class="control-label">조명 테마</span>
+          <div class="seg-group seg-2">
+            <button type="button" data-theme="classic" class="seg-btn theme-btn active">클래식 LED</button>
+            <button type="button" data-theme="aurora" class="seg-btn theme-btn">오로라 + LED</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const canvas = document.getElementById('projectorCanvas');
+      const ctx = canvas.getContext('2d', { alpha: false });
+
+      function getSafeDimensions() {
+        const w = window.innerWidth || document.documentElement.clientWidth || 1280;
+        const h = window.innerHeight || document.documentElement.clientHeight || 720;
+        return {
+          width: w > 0 ? w : 1280,
+          height: h > 0 ? h : 720
+        };
+      }
+
+      const initialDims = getSafeDimensions();
+
+      const state = {
+        width: initialDims.width,
+        height: initialDims.height,
+        dpr: Math.min(window.devicePixelRatio || 1, 2),
+        density: 'high',
+        speedKey: 'normal',
+        speedMultiplier: 1.0,
+        theme: 'classic',
+        isMusicOn: false,
+        hasKidSprite: false,
+        lastTime: performance.now(),
+        elapsed: 0
+      };
+
+      const DENSITY_MAP = {
+        medium: 28,
+        high: 54,
+        ultra: 84
+      };
+
+      const SPEED_MAP = {
+        slow: 0.45,
+        normal: 1.0,
+        fast: 1.85
+      };
+
+      const sprites = {};
+      let icons = [];
+      let stars = [];
+      let microSnow = [];
+
+      /**
+       * 4. 아기 사진 즉시 반영 + 산타 모자 합성 (원본 얼굴 무변형)
+       */
+      const kidPhotoInput = document.getElementById('kidPhotoInput');
+      const adjustModal = document.getElementById('adjustModal');
+      const adjustPreviewCanvas = document.getElementById('adjustPreviewCanvas');
+      const adjustCtx = adjustPreviewCanvas.getContext('2d');
+      const cropZoomRange = document.getElementById('cropZoomRange');
+      const addKidBtn = document.getElementById('addKidBtn');
+      const addKidLabel = document.getElementById('addKidLabel');
+      const adjustKidBtn = document.getElementById('adjustKidBtn');
+      const dropOverlay = document.getElementById('dropOverlay');
+
+      const cropState = {
+        img: null,
+        offsetX: 0,
+        offsetY: 0,
+        zoom: 1.25,
+        isDragging: false,
+        dragStartX: 0,
+        dragStartY: 0
+      };
+
+      function renderKidSticker(targetCtx, cx, cy, faceRadius) {
+        if (!cropState.img) return;
+        const img = cropState.img;
+        const natW = img.naturalWidth || img.width;
+        const natH = img.naturalHeight || img.height;
+        const minSide = Math.min(natW, natH);
+        const baseScale = (faceRadius * 2) / Math.max(minSide, 1);
+        const finalScale = baseScale * cropState.zoom;
+
+        const drawW = natW * finalScale;
+        const drawH = natH * finalScale;
+
+        targetCtx.save();
+        targetCtx.translate(cx, cy);
+
+        // 따뜻한 LED 후광 테두리
+        targetCtx.save();
+        targetCtx.shadowColor = 'rgba(253, 224, 71, 0.95)';
+        targetCtx.shadowBlur = 22;
+        targetCtx.fillStyle = '#fef3c7';
+        targetCtx.beginPath();
+        targetCtx.arc(0, 0, faceRadius + 3.5, 0, Math.PI * 2);
+        targetCtx.fill();
+        targetCtx.restore();
+
+        // 원형 얼굴 클리핑 (원본 사진 그대로, 왜곡·보정 없음)
+        targetCtx.save();
+        targetCtx.beginPath();
+        targetCtx.arc(0, 0, faceRadius, 0, Math.PI * 2);
+        targetCtx.closePath();
+        targetCtx.clip();
+
+        targetCtx.fillStyle = '#1e293b';
+        targetCtx.fillRect(-faceRadius, -faceRadius, faceRadius * 2, faceRadius * 2);
+        targetCtx.drawImage(
+          img,
+          -drawW / 2 + cropState.offsetX,
+          -drawH / 2 + cropState.offsetY,
+          drawW,
+          drawH
+        );
+        targetCtx.restore();
+
+        // 깔끔한 흰색 원형 프레임
+        targetCtx.strokeStyle = '#ffffff';
+        targetCtx.lineWidth = 3;
+        targetCtx.beginPath();
+        targetCtx.arc(0, 0, faceRadius, 0, Math.PI * 2);
+        targetCtx.stroke();
+
+        // 머리 위에 귀여운 산타 모자만 씌우기
+        drawSantaHatOverlay(targetCtx, 0, -faceRadius * 0.84, faceRadius * 1.95);
+
+        targetCtx.restore();
+      }
+
+      function drawAdjustPreview() {
+        const w = adjustPreviewCanvas.width;
+        const h = adjustPreviewCanvas.height;
+        adjustCtx.clearRect(0, 0, w, h);
+        adjustCtx.fillStyle = '#050507';
+        adjustCtx.fillRect(0, 0, w, h);
+        renderKidSticker(adjustCtx, w / 2, h / 2 + 22, 64);
+      }
+
+      function applyKidSpriteImmediately() {
+        const size = 240;
+        const off = document.createElement('canvas');
+        off.width = size;
+        off.height = size;
+        const c = off.getContext('2d');
+        renderKidSticker(c, size / 2, size / 2 + 20, 56);
+
+        sprites.kid = off;
+        state.hasKidSprite = true;
+        addKidBtn.classList.add('has-kid');
+        addKidLabel.textContent = '아기 사진 변경';
+        adjustKidBtn.style.display = 'inline-flex';
+        populateScene();
+      }
+
+      function loadBabyPhotoFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const img = new Image();
+          img.onload = function () {
+            cropState.img = img;
+            cropState.zoom = 1.25;
+            cropState.offsetX = 0;
+            // 일반 아기/인물 사진에서 얼굴이 상단~중앙에 위치하므로 자동으로 얼굴 중심 맞춤
+            cropState.offsetY = (img.naturalHeight > img.naturalWidth) ? 16 : 6;
+            cropZoomRange.value = '1.25';
+
+            // 모달을 거치지 않고 즉시 천장에 투사!
+            applyKidSpriteImmediately();
+            showToast('🎅 산타 모자 쓴 아기 얼굴이 천장에 바로 추가되었습니다!');
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // 버튼 클릭 시 바로 파일 선택창 오픈
+      addKidBtn.addEventListener('click', () => {
+        kidPhotoInput.value = '';
+        kidPhotoInput.click();
+        revealHud();
+      });
+
+      kidPhotoInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) {
+          loadBabyPhotoFile(file);
+        }
+      });
+
+      // 화면 아무 곳에나 사진 드래그 앤 드롭 지원
+      window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropOverlay.classList.add('active');
+      });
+
+      window.addEventListener('dragleave', (e) => {
+        if (e.relatedTarget === null) {
+          dropOverlay.classList.remove('active');
+        }
+      });
+
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropOverlay.classList.remove('active');
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) {
+          loadBabyPhotoFile(file);
+        }
+      });
+
+      // 선택적 얼굴 위치 미세조정 모달
+      adjustKidBtn.addEventListener('click', () => {
+        if (!cropState.img) return;
+        drawAdjustPreview();
+        adjustModal.classList.add('open');
+        revealHud();
+      });
+
+      function startCropDrag(clientX, clientY) {
+        cropState.isDragging = true;
+        cropState.dragStartX = clientX - cropState.offsetX;
+        cropState.dragStartY = clientY - cropState.offsetY;
+      }
+
+      function moveCropDrag(clientX, clientY) {
+        if (!cropState.isDragging) return;
+        cropState.offsetX = clientX - cropState.dragStartX;
+        cropState.offsetY = clientY - cropState.dragStartY;
+        drawAdjustPreview();
+      }
+
+      function endCropDrag() {
+        cropState.isDragging = false;
+      }
+
+      adjustPreviewCanvas.addEventListener('mousedown', (e) => startCropDrag(e.clientX, e.clientY));
+      window.addEventListener('mousemove', (e) => moveCropDrag(e.clientX, e.clientY));
+      window.addEventListener('mouseup', endCropDrag);
+
+      adjustPreviewCanvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) startCropDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+
+      adjustPreviewCanvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) moveCropDrag(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+
+      adjustPreviewCanvas.addEventListener('touchend', endCropDrag);
+
+      cropZoomRange.addEventListener('input', () => {
+        cropState.zoom = parseFloat(cropZoomRange.value) || 1.25;
+        drawAdjustPreview();
+      });
+
+      document.getElementById('adjustCloseBtn').addEventListener('click', () => {
+        adjustModal.classList.remove('open');
+      });
+
+      document.getElementById('changePhotoBtn').addEventListener('click', () => {
+        adjustModal.classList.remove('open');
+        kidPhotoInput.value = '';
+        kidPhotoInput.click();
+      });
+
+      document.getElementById('adjustApplyBtn').addEventListener('click', () => {
+        applyKidSpriteImmediately();
+        adjustModal.classList.remove('open');
+        showToast('얼굴 위치가 적용되었습니다!');
+      });
+
+      /**
+       * 5. 전체 투사 씬 파티클 구성
+       */
+      function populateScene() {
+        const targetCount = DENSITY_MAP[state.density] || 54;
+        const iconTypes = state.hasKidSprite
+          ? ['kid', 'santa', 'bell', 'tree', 'snowman', 'snowflake', 'kid', 'candy', 'gift', 'star']
+          : ['santa', 'bell', 'tree', 'snowman', 'snowflake', 'snowflake', 'bell', 'candy', 'gift', 'star'];
+
+        const pad = 100;
+        const densityFactor = state.density === 'ultra' ? 2.2 : state.density === 'high' ? 1.6 : 1.0;
+        const starCount = Math.min(240, Math.max(50, Math.floor(((state.width * state.height) / 11000) * densityFactor)));
+
+        stars = Array.from({ length: starCount }, () => ({
+          x: Math.random() * state.width,
+          y: Math.random() * state.height,
+          radius: 1 + Math.random() * 2.3,
+          phase: Math.random() * Math.PI * 2,
+          twinkleSpeed: 0.9 + Math.random() * 2.0,
+          color: ['#ffffff', '#fde047', '#7dd3fc', '#fda4af', '#6ee7b7'][Math.floor(Math.random() * 5)]
+        }));
+
+        const microCount = state.density === 'ultra' ? 48 : state.density === 'high' ? 30 : 14;
+        microSnow = Array.from({ length: microCount }, () => ({
+          x: Math.random() * state.width,
+          y: Math.random() * state.height,
+          vx: (Math.random() - 0.5) * 16,
+          vy: 10 + Math.random() * 20,
+          angle: Math.random() * Math.PI * 2,
+          spin: (Math.random() > 0.5 ? 1 : -1) * (0.4 + Math.random() * 0.8),
+          scale: 0.15 + Math.random() * 0.15,
+          alpha: 0.4 + Math.random() * 0.45
+        }));
+
+        icons = [];
+        const aspect = state.width / Math.max(state.height, 1);
+        const cols = Math.max(3, Math.ceil(Math.sqrt(targetCount * aspect)));
+        const rows = Math.max(2, Math.ceil(targetCount / cols));
+        const cellW = (state.width + pad * 2) / cols;
+        const cellH = (state.height + pad * 2) / rows;
+        const mobileFactor = Math.min(state.width, state.height) < 600 ? 0.78 : 1.0;
+
+        for (let i = 0; i < targetCount; i++) {
+          const type = iconTypes[i % iconTypes.length];
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+
+          const x = -pad + col * cellW + (0.15 + Math.random() * 0.7) * cellW;
+          const y = -pad + row * cellH + (0.15 + Math.random() * 0.7) * cellH;
+
+          const layer = i % 3;
+          let baseScale;
+          if (layer === 0) {
+            baseScale = (0.34 + Math.random() * 0.10) * mobileFactor;
+          } else if (layer === 1) {
+            baseScale = (0.50 + Math.random() * 0.12) * mobileFactor;
+          } else {
+            baseScale = (0.66 + Math.random() * 0.15) * mobileFactor;
+          }
+
+          // 아이 얼굴 아이콘은 잘 보이도록 살짝 더 크게 표시
+          if (type === 'kid') {
+            baseScale *= 1.15;
+          }
+
+          const parallax = 0.65 + layer * 0.28;
+          const isFullSpin = type === 'snowflake' || type === 'star';
+
+          icons.push({
+            type,
+            layer,
+            x,
+            y,
+            vx: (Math.random() - 0.5) * 26 * parallax,
+            vy: (Math.random() - 0.5) * 22 * parallax,
+            angle: 0,
+            isFullSpin,
+            spinSpeed: isFullSpin
+              ? (Math.random() > 0.5 ? 1 : -1) * (0.25 + Math.random() * 0.4)
+              : (0.8 + Math.random() * 0.7),
+            swayPhase: Math.random() * Math.PI * 2,
+            // 아이 얼굴은 뒤집히지 않고 ±11도 이내로만 살랑살랑 흔들리도록 제한
+            swayAmp: type === 'kid' ? 0.18 : (0.15 + Math.random() * 0.14),
+            scale: baseScale,
+            pulsePhase: Math.random() * Math.PI * 2
+          });
+        }
+
+        icons.sort((a, b) => a.layer - b.layer);
+      }
+
+      /**
+       * 6. 캔버스 리사이즈 동기화
+       */
+      function syncCanvasSize(repopulate) {
+        const dims = getSafeDimensions();
+        state.width = dims.width;
+        state.height = dims.height;
+        state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        canvas.width = Math.floor(state.width * state.dpr);
+        canvas.height = Math.floor(state.height * state.dpr);
+        ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+
+        if (repopulate) {
+          populateScene();
+        }
+      }
+
+      /**
+       * 7. 메인 60fps 렌더링 루프
+       */
+      function animate(now) {
+        try {
+          const rawDt = Math.min(Math.max((now - state.lastTime) / 1000, 0.001), 0.1);
+          state.lastTime = now;
+          const dt = rawDt * state.speedMultiplier;
+          state.elapsed += dt;
+
+          // 완전한 검은 배경 (#000000)
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, state.width, state.height);
+
+          // 오로라 테마 오버레이
+          if (state.theme === 'aurora') {
+            ctx.save();
+            ctx.globalCompositeOperation = 'screen';
+
+            const g1 = ctx.createRadialGradient(
+              state.width * (0.35 + Math.sin(state.elapsed * 0.16) * 0.15),
+              state.height * (0.3 + Math.cos(state.elapsed * 0.13) * 0.1),
+              10,
+              state.width * 0.4,
+              state.height * 0.35,
+              Math.max(state.width, state.height) * 0.65
+            );
+            g1.addColorStop(0, 'rgba(16, 185, 129, 0.24)');
+            g1.addColorStop(0.5, 'rgba(6, 182, 212, 0.09)');
+            g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = g1;
+            ctx.fillRect(0, 0, state.width, state.height);
+
+            const g2 = ctx.createRadialGradient(
+              state.width * (0.7 + Math.cos(state.elapsed * 0.14) * 0.15),
+              state.height * (0.65 + Math.sin(state.elapsed * 0.17) * 0.1),
+              10,
+              state.width * 0.65,
+              state.height * 0.6,
+              Math.max(state.width, state.height) * 0.6
+            );
+            g2.addColorStop(0, 'rgba(139, 92, 246, 0.2)');
+            g2.addColorStop(0.5, 'rgba(236, 72, 153, 0.07)');
+            g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = g2;
+            ctx.fillRect(0, 0, state.width, state.height);
+
+            ctx.restore();
+          }
+
+          // 별빛 파티클
+          for (let i = 0; i < stars.length; i++) {
+            const s = stars[i];
+            s.phase += dt * s.twinkleSpeed;
+            const alpha = 0.25 + ((Math.sin(s.phase) + 1) * 0.5) * 0.75;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = s.color;
+            ctx.shadowColor = s.color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+
+          // 배경 미니 눈송이
+          const snowSprite = sprites.snowflake;
+          if (snowSprite) {
+            for (let i = 0; i < microSnow.length; i++) {
+              const m = microSnow[i];
+              m.x += (m.vx + Math.sin(state.elapsed + i) * 6) * dt;
+              m.y += m.vy * dt;
+              m.angle += m.spin * dt;
+
+              if (m.x < -40) m.x = state.width + 40;
+              if (m.x > state.width + 40) m.x = -40;
+              if (m.y > state.height + 40) {
+                m.y = -40;
+                m.x = Math.random() * state.width;
+              }
+
+              ctx.save();
+              ctx.globalAlpha = m.alpha;
+              ctx.translate(m.x, m.y);
+              ctx.rotate(m.angle);
+              ctx.scale(m.scale, m.scale);
+              ctx.drawImage(snowSprite, -120, -120, 240, 240);
+              ctx.restore();
+            }
+          }
+
+          // 메인 LED 아이콘 + 아이 얼굴 스티커 렌더링
+          const margin = 120;
+          for (let i = 0; i < icons.length; i++) {
+            const item = icons[i];
+            item.x += item.vx * dt;
+            item.y += item.vy * dt + Math.sin(state.elapsed * 0.85 + item.swayPhase) * 6 * dt;
+
+            if (item.x < -margin) item.x = state.width + margin;
+            if (item.x > state.width + margin) item.x = -margin;
+            if (item.y < -margin) item.y = state.height + margin;
+            if (item.y > state.height + margin) item.y = -margin;
+
+            if (item.isFullSpin) {
+              item.angle += item.spinSpeed * dt;
+            } else {
+              item.swayPhase += item.spinSpeed * dt;
+              item.angle = Math.sin(item.swayPhase) * item.swayAmp;
+            }
+
+            item.pulsePhase += dt * 1.25;
+            const dynamicScale = item.scale * (1 + Math.sin(item.pulsePhase) * 0.04);
+
+            const sprite = sprites[item.type];
+            if (sprite) {
+              ctx.save();
+              ctx.translate(item.x, item.y);
+              ctx.rotate(item.angle);
+              ctx.scale(dynamicScale, dynamicScale);
+              ctx.drawImage(sprite, -120, -120, 240, 240);
+              ctx.restore();
+            }
+          }
+        } catch (err) {
+          console.error('Render loop warning:', err);
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      /**
+       * 8. Web Audio API 오르골 자장가 ('고요한 밤 거룩한 밤')
+       */
+      let audioCtx = null;
+      let lullabyTimer = null;
+      let noteIdx = 0;
+
+      const SILENT_NIGHT = [
+        { f: 392.00, d: 0.65 }, { f: 440.00, d: 0.25 }, { f: 392.00, d: 0.45 }, { f: 329.63, d: 1.15 },
+        { f: 392.00, d: 0.65 }, { f: 440.00, d: 0.25 }, { f: 392.00, d: 0.45 }, { f: 329.63, d: 1.15 },
+        { f: 587.33, d: 0.85 }, { f: 587.33, d: 0.45 }, { f: 493.88, d: 1.15 },
+        { f: 523.25, d: 0.85 }, { f: 523.25, d: 0.45 }, { f: 392.00, d: 1.15 },
+        { f: 440.00, d: 0.85 }, { f: 440.00, d: 0.45 }, { f: 523.25, d: 0.65 }, { f: 493.88, d: 0.25 }, { f: 440.00, d: 0.45 },
+        { f: 392.00, d: 0.65 }, { f: 440.00, d: 0.25 }, { f: 392.00, d: 0.45 }, { f: 329.63, d: 1.35 }
+      ];
+
+      function playBellNote(freq) {
+        if (!audioCtx || !state.isMusicOn) return;
+        const now = audioCtx.currentTime;
+
+        const osc = audioCtx.createOscillator();
+        const overtone = audioCtx.createOscillator();
+        const mainGain = audioCtx.createGain();
+        const overGain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        overtone.type = 'triangle';
+        overtone.frequency.setValueAtTime(freq * 2, now);
+
+        overGain.gain.setValueAtTime(0.025, now);
+        overGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+        mainGain.gain.setValueAtTime(0.0001, now);
+        mainGain.gain.linearRampToValueAtTime(0.11, now + 0.02);
+        mainGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.85);
+
+        osc.connect(mainGain);
+        overtone.connect(overGain);
+        overGain.connect(mainGain);
+        mainGain.connect(audioCtx.destination);
+
+        osc.start(now);
+        overtone.start(now);
+        osc.stop(now + 1.9);
+        overtone.stop(now + 1.9);
+      }
+
+      function stepLullaby() {
+        if (!state.isMusicOn) return;
+        const note = SILENT_NIGHT[noteIdx % SILENT_NIGHT.length];
+        playBellNote(note.f);
+        noteIdx++;
+        lullabyTimer = setTimeout(stepLullaby, note.d * 1000);
+      }
+
+      function toggleMusic() {
+        state.isMusicOn = !state.isMusicOn;
+        const btn = document.getElementById('musicBtn');
+        const emoji = document.getElementById('musicEmoji');
+        const label = document.getElementById('musicLabel');
+
+        if (state.isMusicOn) {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+              audioCtx = new AudioContextClass();
+            }
+          }
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          emoji.textContent = '🎵';
+          label.textContent = '오르골 켜짐';
+          btn.classList.add('music-on');
+          stepLullaby();
+        } else {
+          clearTimeout(lullabyTimer);
+          emoji.textContent = '🔇';
+          label.textContent = '오르골 끄기';
+          btn.classList.remove('music-on');
+        }
+      }
+
+      /**
+       * 9. HUD 컨트롤 및 자동 숨김
+       */
+      const hudContainer = document.getElementById('hudContainer');
+      const toastBanner = document.getElementById('toastBanner');
+      let hudHideTimer = null;
+
+      function revealHud() {
+        hudContainer.classList.remove('hud-hidden');
+        hudContainer.classList.add('hud-visible');
+        clearTimeout(hudHideTimer);
+        hudHideTimer = setTimeout(() => {
+          if (!adjustModal.classList.contains('open')) {
+            hudContainer.classList.remove('hud-visible');
+            hudContainer.classList.add('hud-hidden');
+          }
+        }, 3800);
+      }
+
+      function showToast(msg) {
+        toastBanner.textContent = msg;
+        toastBanner.classList.add('show');
+        setTimeout(() => {
+          toastBanner.classList.remove('show');
+        }, 3200);
+      }
+
+      document.querySelectorAll('.density-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.density = btn.getAttribute('data-density');
+          document.querySelectorAll('.density-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          populateScene();
+          revealHud();
+        });
+      });
+
+      document.querySelectorAll('.speed-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-speed');
+          state.speedKey = key;
+          state.speedMultiplier = SPEED_MAP[key] || 1.0;
+          document.querySelectorAll('.speed-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          revealHud();
+        });
+      });
+
+      document.querySelectorAll('.theme-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.theme = btn.getAttribute('data-theme');
+          document.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          revealHud();
+        });
+      });
+
+      document.getElementById('musicBtn').addEventListener('click', () => {
+        toggleMusic();
+        revealHud();
+      });
+
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      const fullscreenLabel = document.getElementById('fullscreenLabel');
+
+      fullscreenBtn.addEventListener('click', () => {
+        const docEl = document.documentElement;
+        const isFs = document.fullscreenElement || document.webkitFullscreenElement;
+        if (!isFs) {
+          const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+          if (req) {
+            req.call(docEl).catch(() => {
+              showToast('미리보기 창에서는 F11 키 또는 새 탭에서 전체화면이 동작합니다');
+            });
+          } else {
+            showToast('브라우저 메뉴에서 전체화면을 선택해 주세요');
+          }
+        } else {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) exit.call(document);
+        }
+        revealHud();
+      });
+
+      document.addEventListener('fullscreenchange', () => {
+        fullscreenLabel.textContent = document.fullscreenElement ? '창모드' : '전체화면';
+        syncCanvasSize(false);
+      });
+
+      ['mousemove', 'touchstart', 'keydown'].forEach((evt) => {
+        window.addEventListener(evt, revealHud, { passive: true });
+      });
+
+      window.addEventListener('resize', () => {
+        syncCanvasSize(true);
+      });
+
+      // 즉시 초기화 및 렌더링 시작
+      buildSprites();
+      syncCanvasSize(true);
+      requestAnimationFrame(animate);
+      revealHud();
+      showToast('하단 [🎅 아기 사진 바로 넣기]를 누르거나 사진을 화면에 끌어다 놓으세요!');
+    })();
+  </script>
+</body>
+</html>
+```
